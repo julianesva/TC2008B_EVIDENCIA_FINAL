@@ -13,16 +13,20 @@ def init_model_and_states():
     }
     model = SecurityDepartmentModel(parameters)
     model.setup()
-    Security_Dep_States = {robot.onto_robot.id: robot.get_state() for robot in model.robots}
-    return model, robot_states
+    Cam_States = {cam.onto_camera.has_id: cam.get_state() for cam in model.cams}
+    Dron_States = {dron.onto_Dron.has_id: dron.get_state() for dron in model.drons}
+    Guard_States = {guard.onto_Security_P.has_id: guard.get_state() for guard in model.secguards}
+    return model, Cam_States, Dron_States, Guard_States
 
 
 
 @app.before_request
 def before_request():
-    if not hasattr(app, 'model') or not hasattr(app, 'robot_states'):
-        app.model, app.robot_states = init_model_and_states()
-    app.logger.debug(f"Current robot states: {app.robot_states}")
+    if not hasattr(app, 'model') or not hasattr(app, 'Cam_States'):
+        app.model, app.Cam_States, app.Dron_States, app.Guard_States  = init_model_and_states()
+    app.logger.debug(f"Current cam states: {app.Cam_States}")
+    app.logger.debug(f"Current dron states: {app.Dron_States}")
+    app.logger.debug(f"Current guard states: {app.Guard_States}")
 
 
 @app.route('/gmes', methods=['POST'])
@@ -32,7 +36,7 @@ def robot_actions():
         app.logger.debug(f"Received data: {data}")
 
         if not isinstance(data, list):
-            return jsonify({"error": "Invalid input. Expected an array of robot perceptions."}), 400
+            return jsonify({"error": "Invalid input. Expected an array of security perceptions."}), 400
 
         actions = []
 

@@ -28,14 +28,14 @@ with onto:
     class Dron(Thing):
         pass
     
-    #===================DRON AND CAMERA ONTLOGY SECTION (PROPERTIES IN COMMON)===================
+    #===================SECURITY PERSONAL, CAMERA AND DRON ONTLOGY SECTION (PROPERTIES IN COMMON)===================
     class has_status(DataProperty, FunctionalProperty):
-        domain = [Camera, Dron]
+        domain = [Camera, Dron, Security_P]
         range = [str] # Status = "Normal" or "Detected".
         
     class has_action(DataProperty, FunctionalProperty):
-        domain = [Camera, Dron]
-        range = [int] # Property acting as a variable to store the number of times that a Camera or Dron make an alert of an intruder.
+        domain = [Camera, Dron, Security_P]
+        range = [int] # Property acting as a variable to store the number of times that a Camera, Dron or the Security personal make an alert of an intruder.
     
 
 
@@ -50,17 +50,48 @@ class CamAgent(ap.Agent):
         self.onto_camera.has_status = "Normal"
         self.onto_camera.has_action = 0
         self.perception_data = {}
-        self.rules = [
-            ({"perception": {"F": 1}, "is_holding": False}, "grab_F"),
-            ({"perception": {"B": 1}, "is_holding": False}, "grab_B"),
-            ({"perception": {"L": 1}, "is_holding": False}, "grab_L"),
-            ({"perception": {"R": 1}, "is_holding": False}, "grab_R"),
-            ({"perception": {"F": 3}, "is_holding": True}, "drop_F"),
-            ({"perception": {"B": 3}, "is_holding": True}, "drop_B"),
-            ({"perception": {"L": 3}, "is_holding": True}, "drop_L"),
-            ({"perception": {"R": 3}, "is_holding": True}, "drop_R"),
-        ]
-
+        self.rules = []
+        
+    def get_state(self):
+        return {
+            "id": self.onto_camera.has_id,
+            "alert_sensor": self.onto_camera.has_status,
+            "movements": self.onto_camera.has_action
+        }
+        
+class DronAgent(ap.Agent):
+    def setup(self):
+        self.onto_Dron = onto.Dron(f"dron_{self.id}")  # Use the ID in the instance name
+        self.onto_Dron.has_decision = "Normal"
+        self.onto_Dron.has_action = 0
+        self.perception_data = {}
+        self.rules = []
+        
+    def get_state(self):
+        return {
+            "id": self.onto_Dron.has_id,
+            "alert_sensor": self.onto_Dron.has_status,
+            "movements": self.onto_Dron.has_action
+        }
+        
+        
+class SecurityAgent(ap.Agent):
+    def setup(self):
+        self.onto_Security_P = onto.Security_P(f"securityp_{self.id}")  # Use the ID in the instance name
+        self.onto_Security_P.has_status = "Normal"
+        self.onto_Security_P.has_decision = "Normal"
+        self.onto_Security_P.has_action = 0
+        self.perception_data = {}
+        self.rules = []
+        
+    def get_state(self):
+        return {
+            "id": self.onto_Security_P.has_id,
+            "alert_sensor": self.onto_Security_P.has_status,
+            "alert_decision": self.onto_Security_P.has_decision,
+            "movements": self.onto_Security_P.has_action
+        }
+        
 
 
 
@@ -79,11 +110,22 @@ class SecurityDepartmentModel(ap.Model):
         self.current_step = 0
 
         self.cams = ap.AgentList(self, self.num_cams, CamAgent)
+        self.drons = ap.AgentList(self, self.num_dron, DronAgent)
+        self.secguards = ap.AgentList(self, self.num_securityper, SecurityAgent)
         
         
         for i, cam in enumerate(self.cams):
             cam.id = i  # Assign the unique ID
             cam.onto_camera.has_id = i  # Update the ontology with the correct ID
+            
+        for i, dron in enumerate(self.drons):
+            dron.id = i  # Assign the unique ID
+            dron.onto_Dron.has_id = i  # Update the ontology with the correct ID
+            
+        for i, guard in enumerate(self.secguards):
+            guard.id = i  # Assign the unique ID
+            guard.onto_Security_P.has_id = i  # Update the ontology with the correct ID
+            
             
         #self.data = {
         #    'steps_to_completion': None,
