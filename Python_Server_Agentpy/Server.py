@@ -40,19 +40,19 @@ def robot_actions():
 
         actions = []
 
-        for robot_perception in data:
-            if 'id' not in robot_perception or 'position' not in robot_perception:
+        for security_perception in data:
+            if 'id' not in security_perception or 'position' not in security_perception:
                 return jsonify({"error": "Invalid input. Each robot perception must have 'id' and 'position'."}), 400
 
-            robot_id = robot_perception['id']
-            perception = robot_perception['position']
+            robot_id = security_perception['id']
+            perception = security_perception['position']
 
             robot = next((r for r in app.model.robots if r.onto_robot.id == robot_id), None)
             if robot is None:
                 app.logger.error(f"Robot with id {robot_id} not found.")
                 continue
 
-            #HACIA DONDE ESTA HACIENDO ESTA REQUEST DE INFO
+            
             #======================================================
             stored_state = app.robot_states.get(robot_id)
             #======================================================

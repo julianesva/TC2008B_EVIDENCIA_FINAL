@@ -95,13 +95,6 @@ class SecurityAgent(ap.Agent):
 
 
 
-
-
-
-
-
-
-
 class SecurityDepartmentModel(ap.Model):
     def setup(self):
         self.num_cams = self.p.num_cams
